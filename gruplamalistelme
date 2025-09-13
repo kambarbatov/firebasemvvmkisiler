@@ -1,0 +1,154 @@
+
+import Foundation
+import Firebase
+
+class FilmSayfaViewModel : ObservableObject{
+    
+    @Published var filmlerListesi = [Filmler]()
+    
+    var refFilmler = Database.database().reference().child("filmler")
+    
+    func filmleriYukle(kategori_ad: String){
+        
+        //Filtlemem
+        let sorgu = refFilmler.queryOrdered(byChild: "kategori_ad").queryEqual(toValue: kategori_ad)
+        
+
+        sorgu.observe(.value, with: { snapshot in
+            var liste = [Filmler]()
+            
+            //Tüm veriyii çekme key string değer ise herşey olabailir
+            if let gelenVeri = snapshot.value as? [String : AnyObject] {
+                for satir in gelenVeri {
+                    if let d = satir.value as? NSDictionary{
+                        let film_id = satir.key
+                        //eğer bir hata olursa boş dönecek
+                        let film_ad = d["film_ad"] as? String ?? ""
+                        let film_yil = d["film_yil"] as? Int ?? 0
+                        let film_resim = d["film_resim "] as? String ?? ""
+                        let kategori_ad = d["kategori_ad"] as? String ?? ""
+                        let yonetmen_ad = d["yonetmen_ad"] as? String ?? ""
+                        
+                       let film = Filmler(film_id: film_id, film_ad: film_ad, film_yil: film_yil, film_resim: film_resim, kategori_ad: kategori_ad, yonetmen_ad: yonetmen_ad)
+                        
+                        liste.append(film)
+                        
+                    }
+                }
+            }
+          
+            //ara yüzeze veri göndeirken daha verimli veri gönderiyor
+            DispatchQueue.main.async {
+                self.filmlerListesi = liste
+            }
+            
+        })
+        
+    }
+}
+
+
+//
+
+
+import Foundation
+import Firebase
+
+
+class AnasayfaViewModel : ObservableObject {
+    
+    @Published var kategorilerListesi = [Kategoriler]()
+    
+    var refKategoriler = Database.database().reference().child("kategoriler")
+    
+    func kategorileriYukle() {
+        
+        refKategoriler.observe(.value, with: { snapshot in
+            var liste = [Kategoriler]()
+            
+            //Tüm veriyii çekme key string değer ise herşey olabailir
+            if let gelenVeri = snapshot.value as? [String : AnyObject] {
+                for satir in gelenVeri {
+                    if let d = satir.value as? NSDictionary{
+                        let kategori_id = satir.key
+                        //eğer bir hata olursa boş dönecek
+                        let kategori_ad = d["kategori_ad"] as? String ?? ""
+                        
+                        let kategori = Kategoriler(kategori_id: kategori_id, kategori_ad: kategori_ad)
+                        liste.append(kategori)
+                        
+                    }
+                }
+            }
+          
+            //ara yüzeze veri göndeirken daha verimli veri gönderiyor
+            DispatchQueue.main.async {
+                self.kategorilerListesi = liste
+            }
+            
+        })
+    }
+}
+
+
+//
+//  Filmler.swift
+//  FilmlerUygulamasi
+//
+//  Created by Kasım on 17.02.2023.
+//
+
+import Foundation
+
+class Filmler : Identifiable {
+ 
+
+    var film_id:String?
+    var film_ad:String?
+    var film_yil:Int?
+    var film_resim:String?
+    var kategori_ad:String?
+    var yonetmen_ad:String?
+    
+    init(){
+        
+    }
+    
+    init(film_id: String, film_ad: String, film_yil: Int?, film_resim: String?, kategori_ad: String? , yonetmen_ad: String?) {
+        self.film_id = film_id
+        self.film_ad = film_ad
+        self.film_yil = film_yil
+        self.film_resim = film_resim
+        self.kategori_ad = kategori_ad
+        self.yonetmen_ad = yonetmen_ad
+    }
+    
+ 
+    
+    
+}
+
+
+//
+//  Kategoriler.swift
+//  FilmlerUygulamasi
+//
+//  Created by Kasım on 17.02.2023.
+//
+
+import Foundation
+
+class Kategoriler : Identifiable {
+    var kategori_id:String?
+    var kategori_ad:String?
+    
+    init(){
+        
+    }
+    
+    init(kategori_id: String, kategori_ad: String) {
+        self.kategori_id = kategori_id
+        self.kategori_ad = kategori_ad
+    }
+}
+
